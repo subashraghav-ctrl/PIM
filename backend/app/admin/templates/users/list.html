@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Users — PIM Admin{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Users</h1>
+  <button onclick="document.getElementById('createModal').classList.remove('hidden')"
+          class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+    + New User
+  </button>
+</div>
+
+{% if request.query_params.get('error') %}
+<div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded p-3 mb-4">
+  Error: {{ request.query_params.get('error') }}
+</div>
+{% endif %}
+
+<div class="bg-white rounded-xl shadow overflow-hidden">
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-50 border-b">
+      <tr>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Username</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Email</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Roles</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Status</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">MFA</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Admin</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Created</th>
+        <th class="px-4 py-3"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for user in users %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium text-gray-900">{{ user.username }}</td>
+        <td class="px-4 py-3 text-gray-600">{{ user.email }}</td>
+        <td class="px-4 py-3">
+          {% for role in user.roles %}
+          <span class="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded mr-1">{{ role.name }}</span>
+          {% endfor %}
+        </td>
+        <td class="px-4 py-3">
+          {% if user.is_active %}
+          <span class="text-green-600 font-medium">Active</span>
+          {% else %}
+          <span class="text-red-500 font-medium">Inactive</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3">
+          {% if user.mfa_enabled %}<span class="text-green-600">✓</span>{% else %}<span class="text-gray-400">—</span>{% endif %}
+        </td>
+        <td class="px-4 py-3">
+          {% if user.is_superuser %}<span class="text-purple-600 font-medium">Yes</span>{% else %}{% endif %}
+        </td>
+        <td class="px-4 py-3 text-gray-500 text-xs">{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+        <td class="px-4 py-3">
+          {% if user.is_active and user.id != admin.id %}
+          <form method="post" action="/admin/users/{{ user.id }}/deactivate" class="inline">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <button type="submit" class="text-red-500 hover:text-red-700 text-xs"
+                    onclick="return confirm('Deactivate {{ user.username }}?')">Deactivate</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Create User Modal -->
+<div id="createModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+    <h2 class="text-lg font-bold mb-4">Create User</h2>
+    <form method="post" action="/admin/users" class="space-y-4">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+        <input type="text" name="username" required class="w-full border rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <input type="email" name="email" required class="w-full border rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input type="password" name="password" required minlength="8" class="w-full border rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" name="is_superuser" id="is_superuser" value="true">
+        <label for="is_superuser" class="text-sm text-gray-700">Superuser (admin)</label>
+      </div>
+      <div class="flex gap-3 justify-end">
+        <button type="button" onclick="document.getElementById('createModal').classList.add('hidden')"
+                class="text-sm text-gray-600 hover:text-gray-900 px-4 py-2">Cancel</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+          Create
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

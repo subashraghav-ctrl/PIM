@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — PIM Admin{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Dashboard</h1>
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  {% for label, value, color in [
+    ("Total Users", stats.users, "blue"),
+    ("Active Users", stats.active_users, "green"),
+    ("Roles", stats.roles, "purple"),
+    ("Permissions", stats.permissions, "indigo"),
+    ("Pending Requests", stats.pending_requests, "yellow"),
+    ("Active JIT Sessions", stats.active_jit, "orange"),
+    ("Audit Entries", stats.audit_entries, "gray"),
+  ] %}
+  <div class="bg-white rounded-xl shadow p-5">
+    <p class="text-xs text-gray-500 uppercase tracking-wide font-medium">{{ label }}</p>
+    <p class="text-3xl font-bold text-{{ color }}-600 mt-1">{{ value }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="bg-white rounded-xl shadow p-5">
+    <h2 class="font-semibold text-gray-700 mb-3">Quick Actions</h2>
+    <div class="space-y-2">
+      <a href="/admin/users" class="block text-sm text-blue-600 hover:underline">Manage Users</a>
+      <a href="/admin/roles" class="block text-sm text-blue-600 hover:underline">Manage Roles &amp; Permissions</a>
+      <a href="/admin/requests?status=pending" class="block text-sm text-blue-600 hover:underline">Review Pending Requests</a>
+      <a href="/admin/audit" class="block text-sm text-blue-600 hover:underline">View Audit Log</a>
+      <a href="/api/v1/audit/export" class="block text-sm text-blue-600 hover:underline" target="_blank">Export Audit Log (CSV)</a>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl shadow p-5">
+    <h2 class="font-semibold text-gray-700 mb-3">System Info</h2>
+    <dl class="text-sm space-y-1">
+      <div class="flex justify-between"><dt class="text-gray-500">API Docs</dt><dd><a href="/docs" class="text-blue-600 hover:underline" target="_blank">/docs</a></dd></div>
+      <div class="flex justify-between"><dt class="text-gray-500">API Version</dt><dd class="text-gray-800">v1</dd></div>
+    </dl>
+  </div>
+</div>
+{% endblock %}

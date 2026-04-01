@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Roles — PIM Admin{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Roles</h1>
+  <button onclick="document.getElementById('createModal').classList.remove('hidden')"
+          class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+    + New Role
+  </button>
+</div>
+
+{% if request.query_params.get('error') %}
+<div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded p-3 mb-4">
+  Error: {{ request.query_params.get('error') }}
+</div>
+{% endif %}
+
+<div class="space-y-4">
+  {% for role in roles %}
+  <div class="bg-white rounded-xl shadow p-5">
+    <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center gap-3">
+        <h3 class="font-semibold text-gray-900">{{ role.name }}</h3>
+        {% set risk_colors = {"low": "green", "medium": "yellow", "high": "orange", "critical": "red"} %}
+        {% set rc = risk_colors.get(role.risk_level, "gray") %}
+        <span class="text-xs px-2 py-0.5 rounded font-medium bg-{{ rc }}-100 text-{{ rc }}-700">
+          {{ role.risk_level }}
+        </span>
+        {% if role.is_system %}
+        <span class="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-500">system</span>
+        {% endif %}
+      </div>
+      <span class="text-xs text-gray-400">{{ role.users | length }} member(s)</span>
+    </div>
+    {% if role.description %}
+    <p class="text-sm text-gray-500 mb-3">{{ role.description }}</p>
+    {% endif %}
+    <div class="flex flex-wrap gap-1">
+      {% for perm in role.permissions %}
+      <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">{{ perm.name }}</span>
+      {% else %}
+      <span class="text-xs text-gray-400">No permissions assigned</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Create Role Modal -->
+<div id="createModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+    <h2 class="text-lg font-bold mb-4">Create Role</h2>
+    <form method="post" action="/admin/roles" class="space-y-4">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+        <input type="text" name="name" required class="w-full border rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <input type="text" name="description" class="w-full border rounded-lg px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Risk Level</label>
+        <select name="risk_level" class="w-full border rounded-lg px-3 py-2 text-sm">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+      <div class="flex gap-3 justify-end">
+        <button type="button" onclick="document.getElementById('createModal').classList.add('hidden')"
+                class="text-sm text-gray-600 px-4 py-2">Cancel</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+          Create
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

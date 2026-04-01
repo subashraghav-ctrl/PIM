@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Audit Log — PIM Admin{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Audit Log</h1>
+  <a href="/api/v1/audit/export" target="_blank"
+     class="bg-gray-700 hover:bg-gray-800 text-white text-sm font-medium px-4 py-2 rounded-lg">
+    Export CSV
+  </a>
+</div>
+
+<!-- Filter bar -->
+<form method="get" action="/admin/audit" class="flex gap-3 mb-6">
+  <input type="text" name="action" value="{{ filter_action or '' }}" placeholder="Filter by action"
+         class="border rounded-lg px-3 py-2 text-sm w-48">
+  <input type="text" name="resource_type" value="{{ filter_resource or '' }}" placeholder="Resource type"
+         class="border rounded-lg px-3 py-2 text-sm w-40">
+  <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg">Filter</button>
+  <a href="/admin/audit" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-2">Clear</a>
+</form>
+
+<div class="bg-white rounded-xl shadow overflow-hidden">
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-50 border-b">
+      <tr>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">#</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Actor</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Action</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Resource</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Resource ID</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">IP</th>
+        <th class="px-4 py-3 text-left font-semibold text-gray-600">Timestamp (UTC)</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      {% for log in logs %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 text-gray-400 text-xs">{{ log.id }}</td>
+        <td class="px-4 py-2 font-medium text-gray-900">{{ log.actor_username or "system" }}</td>
+        <td class="px-4 py-2">
+          <span class="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ log.action }}</span>
+        </td>
+        <td class="px-4 py-2 text-gray-600">{{ log.resource_type or "—" }}</td>
+        <td class="px-4 py-2 text-gray-500 text-xs font-mono truncate max-w-xs">{{ log.resource_id or "—" }}</td>
+        <td class="px-4 py-2 text-gray-400 text-xs">{{ log.ip_address or "—" }}</td>
+        <td class="px-4 py-2 text-gray-500 text-xs">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No audit log entries found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if total > page_size %}
+<div class="flex gap-2 mt-4 justify-end text-sm">
+  {% if page > 1 %}
+  <a href="/admin/audit?page={{ page - 1 }}{% if filter_action %}&action={{ filter_action }}{% endif %}{% if filter_resource %}&resource_type={{ filter_resource }}{% endif %}"
+     class="px-3 py-1.5 bg-white border rounded hover:bg-gray-50">← Prev</a>
+  {% endif %}
+  <span class="px-3 py-1.5 text-gray-500">Page {{ page }} of {{ (total // page_size) + 1 }} ({{ total }} total)</span>
+  {% if page * page_size < total %}
+  <a href="/admin/audit?page={{ page + 1 }}{% if filter_action %}&action={{ filter_action }}{% endif %}{% if filter_resource %}&resource_type={{ filter_resource }}{% endif %}"
+     class="px-3 py-1.5 bg-white border rounded hover:bg-gray-50">Next →</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
