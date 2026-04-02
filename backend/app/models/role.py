@@ -27,6 +27,13 @@ class Role(Base):
     is_system = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
-    users = relationship("User", secondary=user_roles, back_populates="roles", lazy="selectin")
+    users = relationship(
+        "User",
+        secondary=user_roles,
+        primaryjoin="Role.id == user_roles.c.role_id",
+        secondaryjoin="User.id == user_roles.c.user_id",
+        back_populates="roles",
+        lazy="selectin",
+    )
     permissions = relationship("Permission", secondary=role_permissions, back_populates="roles", lazy="selectin")
     access_requests = relationship("AccessRequest", back_populates="role")

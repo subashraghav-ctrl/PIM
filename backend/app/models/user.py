@@ -36,6 +36,13 @@ class User(Base):
         nullable=False,
     )
 
-    roles = relationship("Role", secondary=user_roles, back_populates="users", lazy="selectin")
+    roles = relationship(
+        "Role",
+        secondary=user_roles,
+        primaryjoin=lambda: User.id == user_roles.c.user_id,
+        secondaryjoin="Role.id == user_roles.c.role_id",
+        back_populates="users",
+        lazy="selectin",
+    )
     access_requests = relationship("AccessRequest", foreign_keys="AccessRequest.requester_id", back_populates="requester")
     approval_steps = relationship("ApprovalStep", foreign_keys="ApprovalStep.approver_id", back_populates="approver")
